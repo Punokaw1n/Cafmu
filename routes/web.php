@@ -50,6 +50,8 @@ Route::middleware(['tenant', 'auth'])->prefix('admin')->name('admin.')->group(fu
 
     // Meja
     Route::resource('tables', TableController::class);
+    // Tambahkan setelah Route::resource('tables', TableController::class);
+    Route::patch('tables/{table}/status', [TableController::class, 'updateStatus'])->name('admin.tables.updateStatus');
 });
 
 // Auth routes (Breeze)
