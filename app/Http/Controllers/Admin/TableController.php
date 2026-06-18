@@ -37,10 +37,11 @@ class TableController extends Controller
             'table_number'   => $request->table_number,
             'qr_code_string' => Str::uuid(),
             'is_active'      => $request->boolean('is_active', true),
+            'status'         => 'available',
         ]);
 
         return redirect()->route('admin.tables.index')
-                         ->with('success', 'Meja berhasil ditambahkan.');
+            ->with('success', 'Meja berhasil ditambahkan.');
     }
 
     public function edit(Table $table)
@@ -61,7 +62,7 @@ class TableController extends Controller
         ]);
 
         return redirect()->route('admin.tables.index')
-                         ->with('success', 'Meja berhasil diupdate.');
+            ->with('success', 'Meja berhasil diupdate.');
     }
 
     public function destroy(Table $table)
@@ -69,7 +70,24 @@ class TableController extends Controller
         $table->delete();
 
         return redirect()->route('admin.tables.index')
-                         ->with('success', 'Meja berhasil dihapus.');
+            ->with('success', 'Meja berhasil dihapus.');
+    }
+
+    // Kasir update status meja (occupied → dirty → available)
+    public function updateStatus(Request $request, Table $table)
+    {
+        $request->validate([
+            'status' => 'required|in:available,occupied,dirty',
+        ]);
+
+        $table->update(['status' => $request->status]);
+
+        return response()->json([
+            'success'      => true,
+            'status'       => $table->status,
+            'status_label' => $table->status_label,
+            'status_color' => $table->status_color,
+        ]);
     }
 
     public function show(Table $table) {}

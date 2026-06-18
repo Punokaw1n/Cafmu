@@ -24,8 +24,8 @@ class CheckoutController extends Controller
         $qrCode = $request->query('table');
         $tenant = App::make('currentTenant');
         $table  = Table::where('tenant_id', $tenant->id)
-                    ->where('qr_code_string', $qrCode)
-                    ->firstOrFail();
+            ->where('qr_code_string', $qrCode)
+            ->firstOrFail();
 
         return view('menu.checkout', compact('cart', 'total', 'table'));
     }
@@ -72,6 +72,9 @@ class CheckoutController extends Controller
             ]);
         }
 
+        // Otomatis set meja jadi "occupied" saat order masuk
+        Table::where('id', $request->table_id)->update(['status' => 'occupied']);
+
         session()->forget('cart');
 
         return redirect()->route('checkout.success', $order->order_number);
@@ -81,9 +84,9 @@ class CheckoutController extends Controller
     {
         $tenant = App::make('currentTenant');
         $order  = Order::where('tenant_id', $tenant->id)
-                    ->where('order_number', $order_number)
-                    ->with('items.product', 'table')
-                    ->firstOrFail();
+            ->where('order_number', $order_number)
+            ->with('items.product', 'table')
+            ->firstOrFail();
 
         return view('menu.success', compact('order'));
     }

@@ -13,11 +13,34 @@ class Table extends Model
         'table_number',
         'qr_code_string',
         'is_active',
+        'status',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    // Status labels untuk tampilan
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'available' => 'Tersedia',
+            'occupied'  => 'Ditempati',
+            'dirty'     => 'Perlu Dibersihkan',
+            default     => 'Tidak Diketahui',
+        };
+    }
+
+    // Status color untuk badge Tailwind
+    public function getStatusColorAttribute(): string
+    {
+        return match ($this->status) {
+            'available' => 'green',
+            'occupied'  => 'red',
+            'dirty'     => 'yellow',
+            default     => 'gray',
+        };
+    }
 
     public function tenant(): BelongsTo
     {
