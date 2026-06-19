@@ -13,19 +13,33 @@ class ResolveTenant
     public function handle(Request $request, Closure $next): Response
     {
         $host = $request->getHost();
-        $parts = explode('.', $host);
+        $subdomain = null;
 
-        // Ambil subdomain (bagian pertama dari host)
-        // Contoh: kopisusu.cafmu.test → subdomain = kopisusu
-        if (count($parts) < 2) {
-            abort(404, 'Tenant tidak ditemukan.');
-        }
+        // Development mode: localhost / 127.0.0.1 → ambil tenant dari query ?tenant= atau session
+        if (in_array($host, ['localhost', '127.0.0.1'])) {
+            $subdomain = $request->query('tenant') ?? session('tenant_subdomain');
 
-        $subdomain = $parts[0];
+            if (!$subdomain) {
+                abort(404, 'Tenant tidak ditemukan. Gunakan ?tenant=nama_subdomain');
+            }
 
-        // Jangan resolve tenant untuk subdomain 'www'
-        if ($subdomain === 'www') {
-            return $next($request);
+            // Simpan ke session agar tidak perlu ?tenant= di setiap URL
+            session(['tenant_subdomain' => $subdomain]);
+        } else {
+            // Production mode: ambil dari subdomain
+            // Contoh: kopisusu.cafmu.test → subdomain = kopisusu
+            $parts = explode('.', $host);
+
+            if (count($parts) < 2) {
+                abort(404, 'Tenant tidak ditemukan.');
+            }
+
+            $subdomain = $parts[0];
+
+            // Jangan resolve tenant untuk subdomain 'www'
+            if ($subdomain === 'www') {
+                return $next($request);
+            }
         }
 
         $tenant = Tenant::where('subdomain', $subdomain)

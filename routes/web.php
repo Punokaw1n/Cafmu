@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\TableController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Menu\MenuController;
 use App\Http\Controllers\Menu\CartController;
 use App\Http\Controllers\Menu\CheckoutController;
@@ -16,7 +17,6 @@ use App\Http\Controllers\Menu\CheckoutController;
 */
 
 Route::middleware(['tenant'])->group(function () {
-
     // Halaman menu publik
     Route::get('/menu/{qr_code_string}', [MenuController::class, 'show'])->name('menu.show');
 
@@ -38,7 +38,6 @@ Route::middleware(['tenant'])->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware(['tenant', 'auth'])->prefix('admin')->name('admin.')->group(function () {
-
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -50,8 +49,11 @@ Route::middleware(['tenant', 'auth'])->prefix('admin')->name('admin.')->group(fu
 
     // Meja
     Route::resource('tables', TableController::class);
-    // Tambahkan setelah Route::resource('tables', TableController::class);
-    Route::patch('tables/{table}/status', [TableController::class, 'updateStatus'])->name('admin.tables.updateStatus');
+    Route::patch('tables/{table}/status', [TableController::class, 'updateStatus'])->name('tables.updateStatus');
+
+    // Pesanan / Orders
+    Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
 });
 
 // Auth routes (Breeze)
