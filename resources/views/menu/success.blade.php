@@ -4,6 +4,17 @@
 <div class="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-10">
 
     <div class="w-full max-w-sm space-y-4">
+    
+        {{-- Logo --}}
+        <div class="text-center mb-6">
+            @php
+                $logoUrl = $currentTenant->getSetting('logo_url');
+            @endphp
+            @if($logoUrl)
+                <img src="{{ Storage::url($logoUrl) }}" alt="Logo" class="h-16 w-auto mx-auto mb-3 object-contain rounded-lg shadow-sm">
+            @endif
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900">{{ $currentTenant->name }}</h1>
+        </div>
 
         {{-- Success Icon --}}
         <div class="text-center">
@@ -20,7 +31,7 @@
         <div class="bg-white rounded-2xl p-5 shadow-sm">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-sm text-gray-500">No. Pesanan</span>
-                <span class="font-bold text-amber-700">{{ $order->order_number }}</span>
+                <span class="font-bold text-[var(--color-primary-700)]">{{ $order->order_number }}</span>
             </div>
             <div class="flex items-center justify-between mb-4">
                 <span class="text-sm text-gray-500">Meja</span>
@@ -38,7 +49,7 @@
 
             <div class="flex items-center justify-between pt-3 mt-2 border-t border-gray-100">
                 <span class="font-bold text-gray-800">Total</span>
-                <span class="font-bold text-amber-700">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                <span class="font-bold text-[var(--color-primary-700)]">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
             </div>
         </div>
 
@@ -59,7 +70,7 @@
 
             {{-- Payment Button --}}
             <button id="pay-button"
-                class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3.5 rounded-2xl transition shadow-sm">
+                class="w-full bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-700)] text-white font-semibold py-3.5 rounded-2xl transition shadow-sm">
                 Bayar Sekarang
             </button>
         @endif
