@@ -7,25 +7,26 @@ use App\Models\Order;
 use App\Models\Table;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use App\Events\OrderStatusUpdated;
 
 class OrderController extends Controller
 {
     public function index()
     {
         $tenant = App::make('currentTenant');
-        
+
         // Filter berdasarkan status dari query
         $status = request('status');
-        
+
         $ordersQuery = Order::where('tenant_id', $tenant->id)
-                            ->with('table', 'items.product');
-        
+            ->with('table', 'items.product');
+
         if ($status) {
             $ordersQuery->where('status', $status);
         }
-        
+
         $orders = $ordersQuery->latest()->paginate(15);
-        
+
         // Count per status untuk filter tabs
         $statusCounts = [
             'new'        => Order::where('tenant_id', $tenant->id)->where('status', 'new')->count(),
@@ -50,6 +51,9 @@ class OrderController extends Controller
         if ($request->status === 'completed' && $oldStatus !== 'completed') {
             Table::where('id', $order->table_id)->update(['status' => 'available']);
         }
+
+        // Broadcast event ke WebSocket
+        OrderStatusUpdated::dispatch($order);
 
         return response()->json([
             'success' => true,
