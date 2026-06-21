@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Scopes\TenantScope;
 
 class TenantSetting extends Model
 {
@@ -12,6 +13,11 @@ class TenantSetting extends Model
         'key',
         'value',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new TenantScope);
+    }
 
     public function tenant(): BelongsTo
     {
