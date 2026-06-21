@@ -6,6 +6,21 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $currentTenant->name ?? 'Cafmu' }} - Admin</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- Dynamic Theme Variables -->
+    @php
+        $primaryColor = App::bound('currentTenant') ? App::make('currentTenant')->getSetting('primary_color', '#d97706') : '#d97706';
+    @endphp
+    <style>
+        :root {
+            --color-primary-50: color-mix(in srgb, {{ $primaryColor }} 10%, white);
+            --color-primary-100: color-mix(in srgb, {{ $primaryColor }} 20%, white);
+            --color-primary-200: color-mix(in srgb, {{ $primaryColor }} 30%, white);
+            --color-primary-500: {{ $primaryColor }};
+            --color-primary-600: color-mix(in srgb, {{ $primaryColor }} 80%, black);
+            --color-primary-700: color-mix(in srgb, {{ $primaryColor }} 60%, black);
+        }
+    </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
 
@@ -14,9 +29,16 @@
         {{-- Sidebar --}}
         <aside class="w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm">
             {{-- Logo --}}
-            <div class="px-6 py-5 border-b border-gray-100">
-                <h1 class="text-xl font-bold text-amber-700">☕ {{ $currentTenant->name ?? 'Cafmu' }}</h1>
-                <p class="text-xs text-gray-400 mt-0.5">Dashboard Admin</p>
+            <div class="px-6 py-6 border-b border-gray-100 flex items-center justify-center gap-3">
+                @php
+                    $logoUrl = App::bound('currentTenant') ? App::make('currentTenant')->getSetting('logo_url') : null;
+                @endphp
+                @if($logoUrl)
+                    <img src="{{ Storage::url($logoUrl) }}" alt="Logo" class="h-8 w-8 object-cover rounded-md">
+                @endif
+                <h1 class="text-xl font-bold text-gray-800 tracking-tight truncate">
+                    {{ App::bound('currentTenant') ? App::make('currentTenant')->name : 'Sistem Kasir' }}
+                </h1>
             </div>
 
             {{-- Nav --}}
@@ -68,6 +90,15 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M10 4v16M14 4v16"/>
                     </svg>
                     Meja
+                </a>
+                <a href="{{ route('admin.settings.index') }}"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
+                          {{ request()->routeIs('admin.settings.*') ? 'bg-amber-50 text-amber-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    Pengaturan
                 </a>
             </nav>
 

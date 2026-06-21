@@ -11,6 +11,7 @@ use App\Http\Controllers\Menu\CartController;
 use App\Http\Controllers\Menu\CheckoutController;
 use App\Http\Controllers\Payment\PaymentController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\SettingController;
 
 // Webhook Midtrans (public, tanpa middleware)
 Route::post('/webhook/midtrans', [PaymentController::class, 'handleWebhook'])->name('webhook.midtrans');
@@ -52,6 +53,8 @@ Route::middleware(['tenant', 'auth'])->prefix('admin')->name('admin.')->group(fu
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/transactions', [ReportController::class, 'transactions'])->name('reports.transactions');
+    Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
 });
 
 require __DIR__ . '/auth.php';

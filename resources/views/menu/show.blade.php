@@ -5,9 +5,15 @@
 
     {{-- Header --}}
     <div class="bg-white sticky top-0 z-10 shadow-sm">
-        <div class="px-4 py-4">
-            <h1 class="text-lg font-bold text-gray-800">{{ $currentTenant->name }}</h1>
-            <p class="text-sm text-gray-500">Meja {{ $table->table_number }}</p>
+        <div class="px-5 py-4 pb-6 text-center">
+            @php
+                $logoUrl = $currentTenant->getSetting('logo_url');
+            @endphp
+            @if($logoUrl)
+                <img src="{{ Storage::url($logoUrl) }}" alt="Logo" class="h-14 w-auto mx-auto mb-3 object-contain rounded-lg shadow-sm">
+            @endif
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900">{{ $currentTenant->name }}</h1>
+            <p class="text-sm text-gray-500 mt-1">Meja {{ $table->table_number }}</p>
         </div>
 
         {{-- Category Tabs --}}
