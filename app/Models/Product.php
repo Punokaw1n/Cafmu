@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Scopes\TenantScope;
 
 class Product extends Model
 {
@@ -24,6 +25,11 @@ class Product extends Model
         'is_available' => 'boolean',
         'price' => 'decimal:2',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new TenantScope);
+    }
 
     public function tenant(): BelongsTo
     {
