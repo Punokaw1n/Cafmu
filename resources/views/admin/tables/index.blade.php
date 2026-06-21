@@ -43,7 +43,7 @@
 
             {{-- QR Code --}}
             <div class="flex justify-center bg-gray-50 rounded-lg p-3">
-                {!! SimpleSoftwareIO\QrCode\Facades\QrCode::size(100)->generate(url('/menu/' . $table->qr_code_string)) !!}
+                {!! SimpleSoftwareIO\QrCode\Facades\QrCode::size(100)->generate(url('/menu/' . $table->qr_code_string . '?tenant=' . $currentTenant->subdomain)) !!}
             </div>
 
             {{-- Update Status --}}

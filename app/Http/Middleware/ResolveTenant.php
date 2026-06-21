@@ -15,8 +15,11 @@ class ResolveTenant
         $host = $request->getHost();
         $subdomain = null;
 
-        // Development mode: localhost / 127.0.0.1 → ambil tenant dari query ?tenant= atau session
-        if (in_array($host, ['localhost', '127.0.0.1'])) {
+        // Development mode: localhost / 127.0.0.1 atau Ngrok → ambil tenant dari query ?tenant= atau session
+        $isLocalhost = in_array($host, ['localhost', '127.0.0.1']);
+        $isNgrok = str_contains($host, 'ngrok-free.dev') || str_contains($host, 'ngrok.app') || str_contains($host, 'ngrok.io');
+
+        if ($isLocalhost || $isNgrok) {
             $subdomain = $request->query('tenant') ?? session('tenant_subdomain');
 
             if (!$subdomain) {
