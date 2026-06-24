@@ -28,6 +28,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Super Admin (tenant_id = null) → ke panel super admin
+        if (auth()->user()->tenant_id === null) {
+            return redirect()->route('superadmin.index');
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

@@ -5,36 +5,25 @@
 <div class="space-y-6">
 
     {{-- Filter Period --}}
-    <div class="flex items-center gap-2">
-        <a href="{{ route('admin.reports.index', ['period' => 'today']) }}"
+    <div class="flex flex-wrap items-center gap-2">
+        @foreach(['today' => 'Hari Ini', 'week' => 'Minggu Ini', 'month' => 'Bulan Ini'] as $key => $label)
+        <a href="{{ route('admin.reports.index', ['period' => $key]) }}"
            class="px-4 py-2 rounded-lg text-sm font-medium transition
-                  {{ $period === 'today' ? 'bg-amber-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50' }}">
-            Hari Ini
+                  {{ $period === $key ? 'bg-[var(--color-primary-600)] text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50' }}">
+            {{ $label }}
         </a>
-        <a href="{{ route('admin.reports.index', ['period' => 'week']) }}"
-           class="px-4 py-2 rounded-lg text-sm font-medium transition
-                  {{ $period === 'week' ? 'bg-amber-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50' }}">
-            Minggu Ini
-        </a>
-        <a href="{{ route('admin.reports.index', ['period' => 'month']) }}"
-           class="px-4 py-2 rounded-lg text-sm font-medium transition
-                  {{ $period === 'month' ? 'bg-amber-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50' }}">
-            Bulan Ini
-        </a>
+        @endforeach
 
         <div class="ml-auto">
             <a href="{{ route('admin.reports.transactions') }}"
-               class="text-sm text-amber-600 hover:text-amber-700 font-medium flex items-center gap-1">
-                Lihat Semua Transaksi
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
+               class="text-sm text-[var(--color-primary-600)] hover:underline font-medium flex items-center gap-1">
+                Semua Transaksi →
             </a>
         </div>
     </div>
 
     {{-- Stats Cards --}}
-    <div class="grid grid-cols-3 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
             <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Pendapatan</p>
             <p class="text-2xl font-bold text-gray-800 mt-1">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
@@ -43,50 +32,63 @@
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
             <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Pesanan</p>
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $totalOrders }}</p>
-            <p class="text-xs text-amber-600 mt-1">Pesanan lunas</p>
+            <p class="text-xs text-gray-400 mt-1">Pesanan lunas</p>
         </div>
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
             <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Rata-rata Order</p>
             <p class="text-2xl font-bold text-gray-800 mt-1">Rp {{ number_format($avgOrderValue, 0, ',', '.') }}</p>
             <p class="text-xs text-gray-400 mt-1">Per transaksi</p>
         </div>
+        <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Metode Bayar</p>
+            <div class="flex items-center gap-3 mt-2">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-green-600">{{ $cashOrders ?? 0 }}</p>
+                    <p class="text-xs text-gray-400">💵 Tunai</p>
+                </div>
+                <div class="text-gray-200 font-light text-lg">|</div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-blue-600">{{ $onlineOrders ?? 0 }}</p>
+                    <p class="text-xs text-gray-400">💳 Online</p>
+                </div>
+            </div>
+        </div>
     </div>
+
+    {{-- Chart Pendapatan Harian --}}
+    @if($dailyRevenue->isNotEmpty())
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <h3 class="font-semibold text-gray-800 mb-4">📈 Grafik Pendapatan</h3>
+        <div style="position:relative; height:220px;">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+    @endif
 
     <div class="grid grid-cols-2 gap-6">
         {{-- Status Breakdown --}}
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
             <h3 class="font-semibold text-gray-800 mb-4">Status Pesanan</h3>
             <div class="space-y-3">
+                @foreach([
+                    ['label' => 'Baru', 'color' => 'bg-blue-400', 'key' => 'new'],
+                    ['label' => 'Diproses', 'color' => 'bg-yellow-400', 'key' => 'processing'],
+                    ['label' => 'Siap', 'color' => 'bg-purple-400', 'key' => 'ready'],
+                    ['label' => 'Selesai', 'color' => 'bg-green-400', 'key' => 'completed'],
+                ] as $s)
                 <div class="flex items-center justify-between">
                     <span class="text-sm text-gray-600 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-blue-400"></span> Baru
+                        <span class="w-2 h-2 rounded-full {{ $s['color'] }}"></span> {{ $s['label'] }}
                     </span>
-                    <span class="font-bold text-gray-800">{{ $statusBreakdown['new'] }}</span>
+                    <span class="font-bold text-gray-800">{{ $statusBreakdown[$s['key']] ?? 0 }}</span>
                 </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-yellow-400"></span> Diproses
-                    </span>
-                    <span class="font-bold text-gray-800">{{ $statusBreakdown['processing'] }}</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-purple-400"></span> Siap
-                    </span>
-                    <span class="font-bold text-gray-800">{{ $statusBreakdown['ready'] }}</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-green-400"></span> Selesai
-                    </span>
-                    <span class="font-bold text-gray-800">{{ $statusBreakdown['completed'] }}</span>
-                </div>
+                @endforeach
             </div>
         </div>
 
         {{-- Top Products --}}
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-            <h3 class="font-semibold text-gray-800 mb-4">Produk Terlaris</h3>
+            <h3 class="font-semibold text-gray-800 mb-4">🏆 Produk Terlaris</h3>
             <div class="space-y-3">
                 @forelse($topProducts as $index => $item)
                 <div class="flex items-center justify-between">
@@ -136,4 +138,41 @@
     </div>
 
 </div>
+
+@if($dailyRevenue->isNotEmpty())
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const labels = @json($dailyRevenue->pluck('date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('d M')));
+    const data   = @json($dailyRevenue->pluck('revenue'));
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary-600').trim() || '#d97706';
+
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Pendapatan (Rp)',
+                data,
+                backgroundColor: primaryColor + 'cc',
+                borderColor: primaryColor,
+                borderWidth: 2,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: v => 'Rp ' + new Intl.NumberFormat('id-ID').format(v)
+                    }
+                }
+            }
+        }
+    });
+</script>
+@endif
 @endsection

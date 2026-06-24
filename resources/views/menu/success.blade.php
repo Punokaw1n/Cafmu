@@ -61,18 +61,33 @@
                 <p class="text-xs text-green-600 mt-1">Terima kasih, pesanan Anda segera disiapkan.</p>
             </div>
         @else
-            {{-- Payment Status --}}
-            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-center">
-                <p class="text-sm text-blue-800">
-                    💳 Silakan lanjutkan pembayaran dengan klik tombol di bawah
-                </p>
+            {{-- Payment Options --}}
+            <div class="space-y-3">
+                <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-center">
+                    <p class="text-sm text-blue-800 font-medium mb-3">
+                        Pilih Metode Pembayaran
+                    </p>
+                    <button id="pay-button"
+                        class="w-full bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-700)] text-white font-semibold py-3 rounded-xl transition shadow-sm flex items-center justify-center gap-2 mb-2">
+                        💳 Bayar Online (QRIS/Transfer)
+                    </button>
+                    <div class="relative py-2">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-blue-200"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-blue-50 text-blue-500">atau</span>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-blue-200 rounded-xl py-3 px-4 mt-2 shadow-sm text-left flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xl flex-shrink-0">💵</div>
+                        <div>
+                            <p class="font-bold text-gray-800 text-sm">Bayar Tunai di Kasir</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Tunjukkan nomor meja ({{ $order->table->table_number }}) atau nomor pesanan Anda ke kasir.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            {{-- Payment Button --}}
-            <button id="pay-button"
-                class="w-full bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-700)] text-white font-semibold py-3.5 rounded-2xl transition shadow-sm">
-                Bayar Sekarang
-            </button>
         @endif
 
         {{-- Back Button --}}
