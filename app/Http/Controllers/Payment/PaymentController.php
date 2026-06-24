@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Midtrans\Config;
 use Midtrans\Snap;
@@ -101,6 +102,7 @@ class PaymentController extends Controller
         // Update payment status based on transaction status
         $transactionStatus = $notification->transaction_status;
         $paymentType = $notification->payment_type ?? null;
+        $wasSentReceipt = false;
 
         if ($transactionStatus == 'capture') {
             if ($paymentType == 'credit_card') {
@@ -108,10 +110,12 @@ class PaymentController extends Controller
                     $order->update(['payment_status' => 'pending']);
                 } else {
                     $order->update(['payment_status' => 'paid']);
+                    $wasSentReceipt = true;
                 }
             }
         } elseif ($transactionStatus == 'settlement') {
             $order->update(['payment_status' => 'paid']);
+            $wasSentReceipt = true;
         } elseif ($transactionStatus == 'pending') {
             $order->update(['payment_status' => 'pending']);
         } elseif ($transactionStatus == 'deny') {
@@ -120,6 +124,12 @@ class PaymentController extends Controller
             $order->update(['payment_status' => 'cancelled']);
         } elseif ($transactionStatus == 'cancel') {
             $order->update(['payment_status' => 'cancelled']);
+        }
+
+        // Kirim e-receipt WhatsApp jika payment berhasil
+        if ($wasSentReceipt) {
+            $whatsapp = new WhatsAppService();
+            $whatsapp->sendEReceipt($order);
         }
 
         // Broadcast perubahan status pembayaran ke dashboard

@@ -45,7 +45,16 @@
                     <p class="font-bold text-gray-800 text-base">{{ $order->order_number }}</p>
                     <p class="text-xs text-gray-400 mt-0.5">Meja {{ $order->table->table_number }} • {{ $order->created_at->diffForHumans() }}</p>
                 </div>
-                <span class="text-lg font-bold text-amber-700">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                <div class="text-right">
+                    <span class="text-lg font-bold text-amber-700 block">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                    <a href="{{ route('admin.orders.print', $order) }}" target="_blank"
+                       class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium mt-1 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        Cetak
+                    </a>
+                </div>
             </div>
 
             {{-- Items --}}
@@ -112,15 +121,34 @@
 
             {{-- Payment Status --}}
             <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
-                <span class="text-gray-500">
+                <span>
                     @if($order->payment_status === 'pending')
                     <span class="text-orange-600 font-medium">💳 Menunggu Pembayaran</span>
                     @elseif($order->payment_status === 'paid')
-                    <span class="text-green-600 font-medium">✅ Sudah Dibayar</span>
+                    <span class="text-green-600 font-medium">
+                        ✅ Lunas
+                        @if($order->payment_method === 'cash')
+                            <span class="ml-1 bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">💵 Tunai</span>
+                        @else
+                            <span class="ml-1 bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">💳 Online</span>
+                        @endif
+                    </span>
                     @else
                     <span class="text-red-600 font-medium">❌ Dibatalkan</span>
                     @endif
                 </span>
+
+                {{-- Tombol Bayar Tunai --}}
+                @if($order->payment_status === 'pending')
+                <form action="{{ route('admin.orders.payCash', $order) }}" method="POST"
+                    onsubmit="return confirm('Konfirmasi pelanggan sudah bayar tunai?')">
+                    @csrf @method('PATCH')
+                    <button type="submit"
+                        class="text-xs font-semibold bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                        💵 Tandai Lunas (Tunai)
+                    </button>
+                </form>
+                @endif
             </div>
         </div>
 
@@ -196,11 +224,24 @@
         disableStats: true,
     });
 
-    // Ganti dari private ke public channel
+    const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+
     window.Echo.channel('tenant-{{ Auth::user()->tenant_id }}')
         .listen('.order.status.updated', (e) => {
             console.log('Order updated:', e);
-            location.reload();
+            
+            // Putar suara notifikasi jika ada order baru (status: new)
+            if (e.order && e.order.status === 'new') {
+                notificationSound.play().catch(err => console.log('Autoplay blocked:', err));
+            } else {
+                // Untuk status selain new, kita tetap putar suara sekilas
+                notificationSound.play().catch(err => console.log('Autoplay blocked:', err));
+            }
+
+            // Tunggu sebentar biar suara terdengar sebelum reload
+            setTimeout(() => {
+                location.reload();
+            }, 500);
         });
 </script>
 @endsection

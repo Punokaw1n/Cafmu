@@ -12,6 +12,7 @@ use App\Http\Controllers\Menu\CheckoutController;
 use App\Http\Controllers\Payment\PaymentController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\SuperAdmin\TenantController as SuperAdminTenantController;
 
 // Webhook Midtrans (public, tanpa middleware)
 Route::post('/webhook/midtrans', [PaymentController::class, 'handleWebhook'])->name('webhook.midtrans');
@@ -51,6 +52,8 @@ Route::middleware(['tenant', 'auth'])->prefix('admin')->name('admin.')->group(fu
     Route::patch('tables/{table}/status', [TableController::class, 'updateStatus'])->name('tables.updateStatus');
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::patch('orders/{order}/pay-cash', [OrderController::class, 'markAsPaidCash'])->name('orders.payCash');
+    Route::get('orders/{order}/print', [OrderController::class, 'printReceipt'])->name('orders.print');
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/transactions', [ReportController::class, 'transactions'])->name('reports.transactions');
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
@@ -58,3 +61,16 @@ Route::middleware(['tenant', 'auth'])->prefix('admin')->name('admin.')->group(fu
 });
 
 require __DIR__ . '/auth.php';
+
+/*
+|--------------------------------------------------------------------------
+| Route Super Admin (hanya untuk Anda - pemilik platform)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'super.admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
+    Route::get('/', [SuperAdminTenantController::class, 'index'])->name('index');
+    Route::get('/tenants/create', [SuperAdminTenantController::class, 'create'])->name('create');
+    Route::post('/tenants', [SuperAdminTenantController::class, 'store'])->name('store');
+    Route::patch('/tenants/{tenant}/toggle', [SuperAdminTenantController::class, 'toggle'])->name('toggle');
+    Route::delete('/tenants/{tenant}', [SuperAdminTenantController::class, 'destroy'])->name('destroy');
+});

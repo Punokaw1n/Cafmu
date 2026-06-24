@@ -8,6 +8,8 @@ use App\Models\Table;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use App\Events\OrderStatusUpdated;
+use App\Services\WhatsAppService;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -60,5 +62,45 @@ class OrderController extends Controller
             'message' => 'Status pesanan berhasil diupdate',
             'status'  => $order->status,
         ]);
+    }
+
+    /**
+     * Tandai pesanan sebagai sudah dibayar tunai (tanpa Midtrans).
+     */
+    public function markAsPaidCash(Order $order)
+    {
+        if ($order->payment_status === 'paid') {
+            return back()->with('info', 'Pesanan ini sudah lunas.');
+        }
+
+        $order->update([
+            'payment_status' => 'paid',
+            'payment_method' => 'cash',
+        ]);
+
+        // Kirim E-Receipt via WhatsApp jika ada nomor HP pelanggan
+        if ($order->customer_phone) {
+            try {
+                $waService = new WhatsAppService();
+                $waService->sendEReceipt($order);
+            } catch (\Exception $e) {
+                Log::error("Gagal kirim WA struk tunai untuk order {$order->order_number}: " . $e->getMessage());
+                // Kita tidak membatalkan proses lunas hanya karena WA gagal
+            }
+        }
+
+        // Broadcast ke dapur agar tahu status terbaru
+        OrderStatusUpdated::dispatch($order);
+
+        return back()->with('success', "Pesanan {$order->order_number} ditandai lunas (tunai) ✅ dan E-Receipt dikirim.");
+    }
+
+    /**
+     * Tampilkan struk kasir untuk dicetak (thermal printer).
+     */
+    public function printReceipt(Order $order)
+    {
+        $order->load(['items.product', 'table', 'tenant']);
+        return view('admin.orders.print', compact('order'));
     }
 }

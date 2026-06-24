@@ -33,6 +33,10 @@ class ReportController extends Controller
         $totalOrders = (clone $ordersQuery)->count();
         $avgOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
 
+        // Payment method stats
+        $cashOrders = (clone $ordersQuery)->where('payment_method', 'cash')->count();
+        $onlineOrders = (clone $ordersQuery)->where('payment_method', 'online')->count();
+
         // Orders per status (semua order, bukan hanya paid)
         $allOrdersQuery = Order::where('tenant_id', $tenant->id)
                                 ->whereBetween('created_at', [$start, $end]);
@@ -70,6 +74,8 @@ class ReportController extends Controller
             'totalRevenue',
             'totalOrders',
             'avgOrderValue',
+            'cashOrders',
+            'onlineOrders',
             'statusBreakdown',
             'topProducts',
             'dailyRevenue',

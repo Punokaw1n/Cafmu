@@ -15,6 +15,12 @@
 
     <div class="px-4 py-4 space-y-4">
 
+        @if(session('error'))
+            <div class="bg-red-50 text-red-600 p-3 rounded-xl text-sm border border-red-100">
+                {{ session('error') }}
+            </div>
+        @endif
+
         {{-- Order Summary --}}
         <div class="bg-white rounded-2xl p-4 shadow-sm">
             <h2 class="font-semibold text-gray-800 mb-3">Ringkasan Pesanan</h2>
