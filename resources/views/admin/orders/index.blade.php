@@ -214,14 +214,10 @@
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
 <script>
     window.Echo = new Echo({
-        broadcaster: 'reverb',
-        key: '{{ env("REVERB_APP_KEY") }}',
-        wsHost: window.location.hostname,
-        wsPort: 8080,
-        wssPort: 443,
-        forceTLS: false,
-        encrypted: false,
-        disableStats: true,
+        broadcaster: 'pusher',
+        key: '{{ env("PUSHER_APP_KEY") }}',
+        cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
+        forceTLS: true
     });
 
     const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
